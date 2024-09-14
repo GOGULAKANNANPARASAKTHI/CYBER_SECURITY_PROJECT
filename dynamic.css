@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#app {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#test-button {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#test-button:hover {
+    background-color: #3e8e41;
+}
+
+#test-results {
+    margin-top: 20px;
+}
+
+#test-results ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#test-results li {
+    margin-bottom: 10px;
+}

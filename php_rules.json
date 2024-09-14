@@ -1,0 +1,444 @@
+{
+    "rules": [
+      {
+        "id": "php01",
+        "title": "Avoid Hardcoding Credentials",
+        "description": "Detects instances where sensitive credentials are hardcoded in the source code, posing a significant security risk.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "credentials",
+          "hardcoding",
+          "security",
+          "vulnerability",
+          "secret leaks"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-798: Use of Hard-coded Credentials",
+        "examples": {
+          "positive": [
+            {
+              "code": "$password = getenv('DB_PASSWORD');",
+              "description": "Using environment variables to store sensitive credentials."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$password = 'mysecretpassword';",
+              "description": "Hardcoding sensitive credentials directly in the source code.",
+              "pattern": "\\$[^\\s]+\\s*=\\s*'[^']+';"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Store sensitive credentials in environment variables or secure storage.",
+            "Use a secrets management tool to securely handle credentials."
+          ],
+          "examples": [
+            {
+              "code": "$password = getenv('DB_PASSWORD');",
+              "description": "Using environment variables to store sensitive credentials."
+            }
+          ]
+        },
+        "rationale": "Hardcoding credentials in source code poses a significant security risk, as it can lead to secret leaks and unauthorized access. Using secure storage and environment variables ensures that sensitive credentials are protected."
+      },
+      {
+        "id": "php02",
+        "title": "Prevent Include Injection Vulnerabilities",
+        "description": "Detects instances where user input is directly used in include expressions, making the application vulnerable to injection attacks.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "include injection"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-434: Unrestricted Include Use",
+        "examples": {
+          "positive": [
+            {
+              "code": "include 'header.php';",
+              "description": "Including a file without user input."
+            },
+            {
+              "code": "$file = 'header.php';\nif (in_array($file, allowedFiles())) {\n    include $file;\n}",
+              "description": "Including a file after validating user input."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$page = $_GET['page'];\ninclude $page . '.php';",
+              "description": "Including a file based on unsanitized user input.",
+              "pattern": "include\\s+\\$[^\\s]+;"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Validate and sanitize user input before using it in include expressions.",
+            "Use a whitelist approach to only allow specific files to be included."
+          ],
+          "examples": [
+            {
+              "code": "$file = 'header.php';\nif (in_array($file, allowedFiles())) {\n    include $file;\n}",
+              "description": "Including a file after validating user input."
+            }
+          ]
+        },
+        "rationale": "Including user input directly in include expressions can lead to injection attacks, allowing attackers to execute malicious code or access sensitive data. Validating and sanitizing user input ensures that only authorized files are included."
+      },
+      {
+        "id": "php03",
+        "title": "Prevent Dynamic Code Execution Vulnerabilities",
+        "description": "Detects instances where user input is directly used in dynamic code execution, making the application vulnerable to injection attacks.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "code injection"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-94: Improper Control of Generation of Code ('Code Injection')",
+        "examples": {
+          "positive": [
+            {
+              "code": "echo 'Hello, World!';",
+              "description": "Executing static code without user input."
+            },
+            {
+              "code": "$name = 'John';\necho 'Hello, ' . $name . '!';",
+              "description": "Executing code with validated user input."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$code = $_GET['code'];\neval($code);",
+              "description": "Executing code based on unsanitized user input.",
+              "pattern": "eval\\s*\\(\\s*\\$[^\\s]+\\s*\\)"
+            },
+            {
+              "code": "$func = $_GET['func'];\n$func();",
+              "description": "Executing a function based on unsanitized user input.",
+              "pattern": "\\$[^\\s]+\\s*=\\s*\\$[^\\s]+;\\s*\\1\\s*\\("
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Validate and sanitize user input before using it in dynamic code execution.",
+            "Use a whitelist approach to only allow specific code to be executed."
+          ],
+          "examples": [
+            {
+              "code": "$name = 'John';\necho 'Hello, ' . $name . '!';",
+              "description": "Executing code with validated user input."
+            }
+          ]
+        },
+        "rationale": "Executing user input directly in dynamic code execution can lead to injection attacks, allowing attackers to execute malicious code or access sensitive data. Validating and sanitizing user input ensures that only authorized code is executed."
+      },
+      {
+        "id": "php04",
+        "title": "Prevent Open Redirection Vulnerabilities",
+        "description": "Detects instances where user input is directly used in HTTP redirects, making the application vulnerable to open redirection attacks.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "open redirection"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-601: Open Redirect",
+        "examples": {
+          "positive": [
+            {
+              "code": "header('Location: https://trusted.example.com');",
+              "description": "Redirecting to a trusted URL without user input."
+            },
+            {
+              "code": "$url = 'https://trusted.example.com';\nif (in_array($url, allowedUrls())) {\n    header('Location: ' . $url);\n}",
+              "description": "Redirecting to a URL after validating user input."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$url = $_GET['url'];\nheader('Location: ' . $url);",
+              "description": "Redirecting to a URL based on unsanitized user input.",
+              "pattern": "header\\s*\\(\\s*['\"]Location['\"]\\s*:\\s*\\$[^\\s]+\\s*\\)"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Validate and sanitize user input before using it in HTTP redirects.",
+            "Use a whitelist approach to only allow specific URLs to be redirected to."
+          ],
+          "examples": [
+            {
+              "code": "$url = 'https://trusted.example.com';\nif (in_array($url, allowedUrls())) {\n    header('Location: ' . $url);\n}",
+              "description": "Redirecting to a URL after validating user input."
+            }
+          ]
+        },
+        "rationale": "Using user input directly in HTTP redirects can lead to open redirection attacks, allowing attackers to trick users into visiting malicious websites. Validating and sanitizing user input ensures that only authorized URLs are redirected to."
+      },
+      {
+        "id": "php05",
+        "title": "Prevent Deserialization Injection Vulnerabilities",
+        "description": "Detects instances where untrusted data is deserialized without verification, making the application vulnerable to deserialization injection attacks.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "deserialization"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-502: Deserialization of Untrusted Data",
+        "examples": {
+          "positive": [
+            {
+              "code": "$data = json_decode($trustedJson, true);",
+              "description": "Deserializing trusted JSON data."
+            },
+            {
+              "code": "$data = unserialize($trustedSerializedData, ['allowed_classes' => false]);",
+              "description": "Deserializing trusted serialized data with allowed_classes set to false."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$data = json_decode($_GET['json'], true);",
+              "description": "Deserializing untrusted JSON data from user input.",
+              "pattern": "json_decode\\s*\\(\\s*\\$_GET\\[\\s*['\"][^'\"]+['\"]\\s*]\\s*,\\s*true\\s*\\)"
+            },
+            {
+              "code": "$data = unserialize($_GET['serialized']);",
+              "description": "Deserializing untrusted serialized data from user input.",
+              "pattern": "unserialize\\s*\\(\\s*\\$_GET\\[\\s*['\"][^'\"]+['\"]\\s*]\\s*\\)"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Verify and validate user input before deserializing it.",
+            "Use a safe deserialization method, such as json_decode with second argument set to true, or unserialize with allowed_classes set to false."
+          ],
+          "examples": [
+            {
+              "code": "$data = json_decode($trustedJson, true);",
+              "description": "Deserializing trusted JSON data."
+            }
+          ]
+        },
+        "rationale": "Deserializing untrusted data can lead to deserialization injection attacks, allowing attackers to execute malicious code or access sensitive data. Verifying and validating user input ensures that only trusted data is deserialized."
+      },
+      {
+        "id": "php06",
+        "title": "Prevent Reflected Cross-Site Scripting (XSS) Vulnerabilities",
+        "description": "Detects instances where user input is directly used in HTTP responses without proper sanitization, making the application vulnerable to reflected XSS attacks.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "xss"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+        "examples": {
+          "positive": [
+            {
+              "code": "echo htmlspecialchars($_GET['name'], ENT_QUOTES, 'UTF-8');",
+              "description": "Sanitizing user input using htmlspecialchars."
+            },
+            {
+              "code": "echo filter_var($_GET['name'], FILTER_SANITIZE_STRING);",
+              "description": "Sanitizing user input using filter_var."
+            }
+          ],
+          "negative": [
+            {
+              "code": "echo $_GET['name'];",
+              "description": "Directly echoing user input without sanitization.",
+              "pattern": "echo\\s+\\$_GET\\[\\s*['\"][^'\"]+['\"]\\s*]\\s*;"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Sanitize user input using functions like htmlspecialchars or filter_var.",
+            "Use a templating engine that automatically escapes user input."
+          ],
+          "examples": [
+            {
+              "code": "echo htmlspecialchars($_GET['name'], ENT_QUOTES, 'UTF-8');",
+              "description": "Sanitizing user input using htmlspecialchars."
+            }
+          ]
+        },
+        "rationale": "Using user input directly in HTTP responses without proper sanitization can lead to reflected XSS attacks, allowing attackers to execute malicious code or access sensitive data. Sanitizing user input ensures that only trusted data is used in responses."
+      },
+      {
+        "id": "php07",
+        "title": "Prevent Database Injection Vulnerabilities",
+        "description": "Detects instances where user input is directly used in database queries without proper sanitization, making the application vulnerable to database injection attacks.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "database"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+        "examples": {
+          "positive": [
+            {
+              "code": "$stmt = $pdo->prepare('SELECT * FROM users WHERE name = :name');\n$stmt->execute(['name' => $_GET['name']]);",
+              "description": "Using prepared statements to prevent SQL injection."
+            },
+            {
+              "code": "$name = mysqli_real_escape_string($link, $_GET['name']);\n$query = \"SELECT * FROM users WHERE name = '$name'\";",
+              "description": "Sanitizing user input using mysqli_real_escape_string."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$query = \"SELECT * FROM users WHERE name = '$_GET[name]'\";",
+              "description": "Directly using user input in a database query without sanitization.",
+              "pattern": "\\$query\\s*=\\s*[\"']SELECT\\s+[^\"']+[\"']\\s*\\.\\s*[\"']\\s*\\$_GET\\[\\s*['\"][^'\"]+['\"]\\s*]\\s*[\"']"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Use prepared statements to separate user input from the database query.",
+            "Sanitize user input using functions like mysqli_real_escape_string or PDO's quote method."
+          ],
+          "examples": [
+            {
+              "code": "$stmt = $pdo->prepare('SELECT * FROM users WHERE name = :name');\n$stmt->execute(['name' => $_GET['name']]);",
+              "description": "Using prepared statements to prevent SQL injection."
+            }
+          ]
+        },
+        "rationale": "Using user input directly in database queries without proper sanitization can lead to database injection attacks, allowing attackers to execute malicious commands or access sensitive data. Sanitizing user input ensures that only trusted data is used in queries."
+      },
+      {
+        "id": "php08",
+        "title": "Prevent XML External Entity (XXE) Vulnerabilities",
+        "description": "Detects instances where XML parsers are vulnerable to XXE attacks, allowing attackers to expose sensitive data, exhaust system resources, or forge requests.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "injection",
+          "security",
+          "vulnerability",
+          "xml"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-611: Improper Restriction of XML External Entity Reference",
+        "examples": {
+          "positive": [
+            {
+              "code": "$xml = new SimpleXMLElement($xmlString, LIBXML_NOENT | LIBXML_NONET);",
+              "description": "Disabling external entity loading using LIBXML_NOENT and LIBXML_NONET flags."
+            },
+            {
+              "code": "$dom = new DOMDocument();\n$dom->loadXML($xmlString, LIBXML_NOENT | LIBXML_NONET);",
+              "description": "Disabling external entity loading using LIBXML_NOENT and LIBXML_NONET flags."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$xml = new SimpleXMLElement($xmlString);",
+              "description": "Enabling external entity loading by default.",
+              "pattern": "new\\s+SimpleXMLElement\\s*\\("
+            },
+            {
+              "code": "$dom = new DOMDocument();\n$dom->loadXML($xmlString);",
+              "description": "Enabling external entity loading by default.",
+              "pattern": "new\\s+DOMDocument\\s*\\(\\)\\s*\\.\\s*loadXML\\s*\\("
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Disable external entity loading using flags like LIBXML_NOENT and LIBXML_NONET.",
+            "Use a secure XML parser that disables external entity loading by default."
+          ],
+          "examples": [
+            {
+              "code": "$xml = new SimpleXMLElement($xmlString, LIBXML_NOENT | LIBXML_NONET);",
+              "description": "Disabling external entity loading using LIBXML_NOENT and LIBXML_NONET flags."
+            }
+          ]
+        },
+        "rationale": "Enabling external entity loading in XML parsers can lead to XXE vulnerabilities, allowing attackers to expose sensitive data, exhaust system resources, or forge requests. Disabling external entity loading ensures that only trusted data is processed."
+      },
+      {
+        "id": "php09",
+        "title": "Use Secure Password for Database Connection",
+        "description": "Detects instances where an empty password is used to connect to a database, making it vulnerable to unauthorized access and data breaches.",
+        "impact": "High",
+        "category": "Security",
+        "tags": [
+          "authentication",
+          "security",
+          "vulnerability",
+          "database"
+        ],
+        "severity": "Blocker",
+        "cwe": "CWE-521: Weak Password Requirements",
+        "examples": {
+          "positive": [
+            {
+              "code": "$pdo = new PDO('mysql:host=localhost;dbname=test', 'username', 'strong_password');",
+              "description": "Using a strong password to connect to the database."
+            },
+            {
+              "code": "$mysqli = new mysqli('localhost', 'username', 'strong_password', 'test');",
+              "description": "Using a strong password to connect to the database."
+            }
+          ],
+          "negative": [
+            {
+              "code": "$pdo = new PDO('mysql:host=localhost;dbname=test', 'username', '');",
+              "description": "Using an empty password to connect to the database.",
+              "pattern": "new\\s+PDO\\s*\\(.*\\s*,\\s*['\"]\\s*['\"]\\s*\\)"
+            },
+            {
+              "code": "$mysqli = new mysqli('localhost', 'username', '', 'test');",
+              "description": "Using an empty password to connect to the database.",
+              "pattern": "new\\s+mysqli\\s*\\(.*\\s*,\\s*['\"]\\s*['\"]\\s*\\)"
+            }
+          ]
+        },
+        "fix": {
+          "steps": [
+            "Use a strong and unique password for database connection.",
+            "Consider using environment variables or secure password storage mechanisms."
+          ],
+          "examples": [
+            {
+              "code": "$pdo = new PDO('mysql:host=localhost;dbname=test', 'username', 'strong_password');",
+              "description": "Using a strong password to connect to the database."
+            }
+          ]
+        },
+        "rationale": "Using an empty password for database connection makes it vulnerable to unauthorized access, data breaches, and system compromise. Using a strong and unique password ensures the security and integrity of the database and its data."
+      }
+    ]
+  }
